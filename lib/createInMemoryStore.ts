@@ -17,5 +17,9 @@ export default (): Store => {
 		db[key] = JSON.stringify(value);
 	};
 
-	return { get, set };
+	const exists = async(key: string): Promise<boolean> => {
+		return typeof db[key] === "string";
+	};
+
+	return { get, set, exists };
 };

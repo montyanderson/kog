@@ -7,8 +7,7 @@ import createLog from "./lib/createLog.ts";
 	const store = createInMemoryStore();
 
 	const log = createLog({
-		store,
-		views: {}
+		store
 	});
 	
 })();
