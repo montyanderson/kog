@@ -8,6 +8,8 @@ USER deno
 
 ADD . .
 
+RUN deno test ./tests/*.ts
+
 RUN deno cache index.ts
 
 CMD ["run", "--allow-net", "--allow-env", "index.ts"]
