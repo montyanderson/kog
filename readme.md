@@ -4,10 +4,10 @@
 
 [![test](https://github.com/montyanderson/kog/actions/workflows/test.yml/badge.svg)](https://github.com/montyanderson/kog/actions/workflows/test.yml)
 
-# usage
+## getting started
 
-> just
+Start up a cluster of 3 kog nodes in a single command.
 
-# tests
-
-> just test
+```
+curl https://raw.githubusercontent.com/montyanderson/kog/master/docker-compose-hub.yml | docker compose -f - up
+```
