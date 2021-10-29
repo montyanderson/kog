@@ -50,7 +50,11 @@ export default ({
 		}
 	};
 
-	async function getItem(id: string): Promise<Item> {
+	async function getItem(id: string): Promise<Item | null> {
+		if(id === null) {
+			return null;
+		}
+
 		const item = await store.get(`item:${id}`) as RawItem;
 
 		const $next = await store.exists(`next:${id}`)
@@ -68,15 +72,27 @@ export default ({
 		};
 	};
 
-	async function getHead(): Promise<Item> {
+	async function getHead(): Promise<Item | null> {
+		if(await store.exists("meta:head") === false) {
+			return null;
+		}
+
 		return getItem(await store.get("meta:head"));
 	};
 
-	async function getTail(): Promise<Item> {
+	async function getTail(): Promise<Item | null> {
+		if(await store.exists("meta:tail") === false) {
+			return null;
+		}
+	
 		return getItem(await store.get("meta:tail"));
 	}
 
-	async function getSyncItem(id: string): Promise<Item> {
+	async function getSyncItem(id: string): Promise<Item | null> {
+		if(await store.exists(`item:${id}`) === false) {
+			return null;
+		}
+	
 		const item = await store.get(`item:${id}`) as RawItem;
 
 		const $next = await store.exists(`sync-next:${id}`)
@@ -94,46 +110,57 @@ export default ({
 		};
 	};
 
-	async function getSyncHead(): Promise<Item> {
+	async function getSyncHead(): Promise<Item | null> {
+		if(await store.exists("meta:sync-head") === false) {
+			return null;
+		}
+	
 		return getItem(await store.get("meta:sync-head"));
 	};
 
-	async function getSyncTail(): Promise<Item> {
+	async function getSyncTail(): Promise<Item | null> {
+		if(await store.exists("meta:sync-tail") === false) {
+			return null;
+		}
+	
 		return getItem(await store.get("meta:sync-tail"));
 	}
 
 	async function *list() {
 		let item = await getTail();
-		yield item;
 
-		while(item.$next !== null) {
-			item = await getItem(item.$next);
+		while(item !== null) {
 			yield item;
+		
+			item = await getItem(item.$next as string);
 		}
 	};
 
 	async function *syncList() {
 		let item = await getSyncTail();
-		yield item;
-
-		while(item.$next !== null) {
-			item = await getSyncItem(item.$next);
+		
+		while(item !== null) {
 			yield item;
+
+			item = await getSyncItem(item.$next as string);
 		}
 	}
 
 	async function *listBackwards() {
 		let item = await getHead();
-		yield item;
 
-		while(item.$previous !== null) {
-			item = await getItem(item.$previous);
-
+		while(item !== null) {
 			yield item;
+		
+			item = await getItem(item.$previous as string);
 		}
 	}
 
-	async function insert(item: RawItem): Promise<void> {
+	async function insert(item: RawItem): Promise<boolean> {
+		if(await store.exists(`item:${item.$id}`) === true) {
+			return false;
+		}
+	
 		// store item
 		await store.set(`item:${item.$id}`, item);
 	
@@ -142,7 +169,7 @@ export default ({
 			await store.set("meta:head", item.$id);
 			await store.set("meta:tail", item.$id);
 
-			return;
+			return true;
 		}
 	
 		for await (const previous of listBackwards()) {
@@ -157,7 +184,7 @@ export default ({
 				await store.set(`previous:${item.$id}`, previous.$id);
 				await store.set(`next:${previous.$id}`, item.$id);
 
-				return;
+				return true;
 			}
 		} 
 
@@ -167,6 +194,7 @@ export default ({
 		
 		await store.set("meta:tail", item.$id);
 
+		return true;
 	}
 
 	return {

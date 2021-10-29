@@ -1,0 +1,33 @@
+version: "3.8"
+
+networks:
+  kog-cluster:
+
+
+services:
+  kog-1:
+    build: .
+    ports:
+      - "127.0.0.1:6901:6900"
+    environment:
+      - KOG_NODES=http://kog-2:6900,http://kog-3:6900
+    networks:
+      - kog-cluster
+      
+  kog-2:
+    build: .
+    ports:
+      - "127.0.0.1:6902:6900"
+    environment:
+      - KOG_NODES=http://kog-1:6900,http://kog-3:6900
+    networks:
+      - kog-cluster
+      
+  kog-3:
+    build: .
+    ports:
+      - "127.0.0.1:6903:6900"
+    environment:
+      - KOG_NODES=http://kog-1:6900,http://kog-2:6900
+    networks:
+      - kog-cluster

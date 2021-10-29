@@ -21,13 +21,13 @@ export interface Item extends RawItem {
 
 export interface Log {
 	push(item: object): Promise<void>;
-	insert(item: RawItem): Promise<void>;
+	insert(item: RawItem): Promise<boolean>;
 	list(): AsyncGenerator<any>;
 	syncList(): AsyncGenerator<any>;
 
-	getHead(): Promise<Item>;
-	getItem(id: string): Promise<Item>;
+	getHead(): Promise<Item | null>;
+	getItem(id: string): Promise<Item | null>;
 	
-	getSyncHead(): Promise<Item>;
-	getSyncItem(id: string): Promise<Item>;
+	getSyncHead(): Promise<Item | null>;
+	getSyncItem(id: string | null): Promise<Item | null>;
 };
